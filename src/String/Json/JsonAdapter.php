@@ -8,28 +8,21 @@ class JsonAdapter
     /**
      * Converts an array to a CSV string
      *
-     * @param array  $data      The array to convert
-     * @param string $separator The CSV field separator
-     * @param string $enclosure The CSV field enclosure
-     * @param string $escape    The CSV escape character
+     * @param mixed    $data        The array to convert
+     * @param int      $flags 
+     * @param int|null $depth 
+     * @param bool     $throwOnFail Throws an exception on convertion fail
      *
      * @return string
      */
-    public static function toJson(array $data, string $separator = ',', string $enclosure = '"', string $escape = '\\'): string
+    public static function toJson(mixed $data, int|null $flags = JSON_PRETTY_PRINT|JSON_THROW_ON_ERROR, int|null $depth = 512, bool $throwOnFail = true): string
     {
-        $output = fopen('php://temp', 'w+');
-
-        foreach ($data as $row) {
-            fputcsv($output, $row, $separator, $enclosure, $escape);
+        $json = json_encode($data, $flags, $depth);
+        if ($throwOnFail && !strlen($json)) {
+            throw new JsonAdapterException("Encoded JSON is empty");
         }
 
-        rewind($output);
-
-        $csvString = stream_get_contents($output);
-
-        fclose($output);
-
-        return $csvString;
+        return $json;
     }
 
     /**
@@ -39,14 +32,15 @@ class JsonAdapter
      * @param bool|null $associative  
      * @param int       $depth 
      * @param int       $flags 
+     * @param bool      $throwOnFail Throws an exception on convertion fail
      * 
      * @return array
      * @throws JsonAdapterException
      */
-    public static function toArray(string $json, bool|null $associative = true, int|null $depth = 512, int $flags = JSON_THROW_ON_ERROR): array
+    public static function toArray(string $json, bool|null $associative = true, int|null $depth = 512, int $flags = JSON_THROW_ON_ERROR, bool $throwOnFail = true): array
     {
-        $array = json_decode($json, associative: $associative, depth: $depth, flags: $flags);
-        if (empty($array)) {
+        $array = json_decode($json, $associative, $depth, $flags);
+        if ($throwOnFail && (!$array || empty($array))) {
             throw new JsonAdapterException("Decoded array is empty");
         }
 

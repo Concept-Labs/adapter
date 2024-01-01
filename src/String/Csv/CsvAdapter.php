@@ -1,5 +1,5 @@
 <?php
-namespace Cl\Adapter\Csv;
+namespace Cl\Adapter\String\Csv;
 
 use Cl\Adapter\Csv\Exception\CsvAdapterException;
 
@@ -42,7 +42,7 @@ class CsvAdapter
      * @param string $enclosure The CSV field enclosure
      * @param string $escape    The CSV escape character
      *
-     * @return string
+     * @return array
      */
     public static function toArray(string $csvString, bool $headers = true, string $separator = ',', string $enclosure = '"', string $escape = "\\"): array
     {

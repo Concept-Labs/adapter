@@ -1,7 +1,7 @@
 {
     "name": "concept-labs/adapter",
     "description": "(C)oncept-Labs Adapter",
-    "keywords": ["php","config"],
+    "keywords": ["php","adapter"],
     "license": "MIT",
     "authors": [
         {
