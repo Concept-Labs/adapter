@@ -1,11 +1,11 @@
 <?php
 
 use PHPUnit\Framework\TestCase;
-use Cl\Adapter\Csv\CsvAdapter;
-use Cl\Adapter\Csv\Exception\CsvAdapterException;
+use Cl\Adapter\String\Csv\CsvAdapter;
+use Cl\Adapter\String\Csv\Exception\CsvAdapterException;
 
 /**
- * @covers Cl\Config\DataProvider\File\Json\JsonFileDataProvider
+ * @covers Cl\Adapter\String\Csv\CsvAdapter
  */
 class CsvAdapterTest extends TestCase
 {

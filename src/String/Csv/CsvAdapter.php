@@ -1,8 +1,8 @@
 <?php
+
 namespace Cl\Adapter\String\Csv;
 
-use Cl\Adapter\Csv\Exception\CsvAdapterException;
-
+use Cl\Adapter\String\Csv\Exception\CsvAdapterException;
 
 class CsvAdapter
 {
@@ -12,25 +12,36 @@ class CsvAdapter
      * @param array  $data      The array to convert
      * @param string $separator The CSV field separator
      * @param string $enclosure The CSV field enclosure
-     * @param string $escape    The CSV escape character
      *
      * @return string
+     * @throws CsvAdapterException
      */
-    public static function toCsv(array $data, string $separator = ',', string $enclosure = '"', string $escape = '\\'): string
+    public static function toCsv(array $data, string $separator = ',', string $enclosure = '"'): string
     {
         $output = fopen('php://temp', 'w+');
 
-        foreach ($data as $row) {
-            fputcsv($output, $row, $separator, $enclosure, $escape);
+        if ($output === false) {
+            throw new CsvAdapterException('Failed to open temporary file for CSV output');
         }
 
-        rewind($output);
+        try {
+            foreach ($data as $row) {
+                if (fputcsv($output, $row, $separator, $enclosure) === false) {
+                    throw new CsvAdapterException('Error writing to CSV');
+                }
+            }
 
-        $csvString = stream_get_contents($output);
+            rewind($output);
 
-        fclose($output);
+            $csvString = stream_get_contents($output);
+            if ($csvString === false) {
+                throw new CsvAdapterException('Error reading CSV content');
+            }
 
-        return $csvString;
+            return $csvString;
+        } finally {
+            fclose($output);
+        }
     }
 
     /**
@@ -40,28 +51,37 @@ class CsvAdapter
      * @param bool   $headers   True to fetch headers and use for array keys
      * @param string $separator The CSV field separator
      * @param string $enclosure The CSV field enclosure
-     * @param string $escape    The CSV escape character
      *
      * @return array
+     * @throws CsvAdapterException
      */
-    public static function toArray(string $csvString, bool $headers = true, string $separator = ',', string $enclosure = '"', string $escape = "\\"): array
+    public static function toArray(string $csvString, bool $headers = true, string $separator = ',', string $enclosure = '"'): array
     {
+        if (empty($csvString)) {
+            throw new CsvAdapterException('CSV string is empty');
+        }
+
         $array = [];
         $rows = explode(PHP_EOL, $csvString);
 
         foreach ($rows as $row) {
             if (!empty($row)) {
-                $array[] = str_getcsv(trim($row), $separator, $enclosure, $escape);
+                $array[] = str_getcsv(trim($row), $separator, $enclosure);
             }
         }
 
         if (empty($array)) {
-            throw new CsvAdapterException("Converted array is empty");
+            throw new CsvAdapterException('Converted array is empty');
         }
 
         if ($headers) {
             $headers = array_shift($array);
-            $array = array_map(fn($row) => array_combine($headers, $row), $array);
+            $array = array_map(
+                static function (array $row) use ($headers) {
+                    return array_combine($headers, $row);
+                },
+                $array
+            );
         }
 
         return $array;

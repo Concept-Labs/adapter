@@ -22,7 +22,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Cl\\Adapter\\Test\\": "src/test/"
+            "Cl\\Adapter\\Test\\": "test/"
         }
     }
 
